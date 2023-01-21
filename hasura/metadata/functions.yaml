@@ -1,0 +1,9 @@
+- function:
+    schema: public
+    name: get_dist_sales_aggregate
+- function:
+    schema: public
+    name: get_outlet_sales_aggregate
+- function:
+    schema: public
+    name: get_sales_aggregate

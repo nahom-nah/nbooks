@@ -1,0 +1,1 @@
+ALTER TABLE "public"."import_log" DROP COLUMN "file_name";

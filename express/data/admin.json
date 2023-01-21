@@ -1,0 +1,9 @@
+{
+  "full_name": "EVD Admin",
+  "username": "admin",
+  "email": "admin@evd.com",
+  "phone": "+251915565300",
+  "password": "admin",
+  "is_active": true,
+  "roleid": ""
+}

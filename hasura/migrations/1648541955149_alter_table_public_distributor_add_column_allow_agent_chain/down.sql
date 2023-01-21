@@ -1,0 +1,4 @@
+-- Could not auto-generate a down migration.
+-- Please write an appropriate down migration for the SQL below:
+-- alter table "public"."distributor" add column "allow_agent_chain" boolean
+--  not null default 'false';

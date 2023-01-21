@@ -1,0 +1,43 @@
+version: "3.6"
+services:
+  nbooks_express:
+    container_name: nbooks_express
+    network_mode: host
+    # ports:
+    #   - "${EXPRESS_PORT}:${EXPRESS_PORT}"
+    build:
+      dockerfile: express.dockerfile
+      context: .
+      args:
+        - EXPRESS_PORT=${EXPRESS_PORT}
+    restart: always
+    environment:
+      - EXPRESS_PORT=${EXPRESS_PORT}
+      - HASURA_GRAPHQL_URL=${HASURA_GRAPHQL_URL}
+      - HASURA_GRAPHQL_ADMIN_SECRET=${HASURA_GRAPHQL_ADMIN_SECRET}
+      - NODE_ENV=${NODE_ENV:-development}
+      - ENCRYPTION_KEY=${KEY}
+      - VOUCHER_SECRET=${VOUCHER_SECRET}
+      - PG_DATABASE_URL=${HASURA_GRAPHQL_DATABASE_URL}
+  nbooks_graphql_engine:
+    container_name: nbooks_graphql_engine
+    image: hasura/graphql-engine:v2.2.1
+    restart: always
+    # ports:
+    #   - "${HASURA_GRAPHQL_SERVER_PORT}:${HASURA_GRAPHQL_SERVER_PORT}"
+    network_mode: host
+    depends_on:
+      - "nbooks_express"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: ${HASURA_GRAPHQL_DATABASE_URL}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      # HASURA_GRAPHQL_ENABLE_TELEMETRY: "false"
+      HASURA_GRAPHQL_CORS_DOMAIN: "*"
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256", "claims_namespace":"${NAMESPACE}", "key": "${KEY}"}'
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_SERVER_PORT: ${HASURA_GRAPHQL_SERVER_PORT}
+      HASURA_ACTION_SECRET: ${HASURA_ACTION_SECRET}
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      WEBHOOK_URL: ${ACTION_BASE_URL}
+      WEBHOOK_URL_2: ${ACTION_BASE_URL_2}

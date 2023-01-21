@@ -1,0 +1,7 @@
+version: "3.6"
+services:
+  nbooks_express:
+    build:
+      dockerfile: express-dev.dockerfile
+    volumes:
+      - .:/usr/src/app

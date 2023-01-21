@@ -1,0 +1,7 @@
+-- Could not auto-generate a down migration.
+-- Please write an appropriate down migration for the SQL below:
+-- INSERT INTO role (slug, name, description)
+-- VALUES
+--     ('Agent', 'Agent', 'Agent user.'),
+--     ('Sales', 'Sales', 'Sales user.'),
+--     ('DCC', 'Division and Credit Collection', 'Division and credit collection user.');

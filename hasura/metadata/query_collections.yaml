@@ -1,0 +1,4662 @@
+- name: allowed-queries
+  definition:
+    queries:
+      - name: deposit_subscription
+        query: |
+          subscription deposit_subscription {
+          	deposit_aggregate(where: {approverid:{_is_null:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: dtopup_subscription
+        query: |
+          subscription dtopup_subscription {
+          	dtopup_aggregate(where: {approverid:{_is_null:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: load_subscription
+        query: |
+          subscription load_subscription {
+          	load_aggregate(where: {approverid:{_is_null:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: notification_subscription
+        query: |
+          subscription notification_subscription {
+          	notification_aggregate(where: {seen:{_eq:false}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_operators
+        query: |
+          query get_operators {
+          	operator(order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_operators_info
+        query: |
+          query get_operators_info ($limit: Int!, $offset: Int!) {
+          	operator(limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		name
+          		description
+          		url
+          	}
+          }
+      - name: get_denominations_without_operator
+        query: |
+          query get_denominations_without_operator {
+          	denomination(order_by: {value:asc}) {
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          	}
+          }
+      - name: get_voucher_info
+        query: |
+          query get_voucher_info ($serial: String!) {
+          	voucher(where: {serial:{_eq:$serial}}) {
+          		id
+          		serial
+          		voucher_batch
+          		expiration_date
+          		is_active
+          		is_suspended
+          		printed_at
+          		sale_batch
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          		user {
+          			full_name
+          			username
+          		}
+          	}
+          }
+      - name: get_all_retailer_users_username
+        query: |
+          query get_all_retailer_users_username {
+          	user(where: {role:{slug:{_in:["Retailer","Agent"]}}}, order_by: {full_name:asc}) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_only_retailer_users_username
+        query: |
+          query get_only_retailer_users_username {
+          	user(where: {role:{slug:{_eq:"Retailer"}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_batch_sales
+        query: |
+          query get_batch_sales ($where: batch_sale_bool_exp!, $limit: Int, $offset: Int!) {
+          	batch: batch_sale(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		batch
+          		amount
+          		type
+          		created_at
+          		archived
+          		verified
+          		corrected
+          		denomination {
+          			value
+          		}
+          		userid
+          		user {
+          			full_name
+          			username
+          		}
+          		distributor {
+          			name
+          		}
+          	}
+          	batch_aggregate: batch_sale_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_voucher_reprints
+        query: |
+          query get_voucher_reprints ($where: reprint_bool_exp!) {
+          	reprint(where: $where) {
+          		id
+          		printed_at
+          		batch
+          	}
+          }
+      - name: get_denomination_sale_aggregate
+        query: |
+          query get_denomination_sale_aggregate ($userid: uuid!, $date1: timestamptz, $date2: timestamptz) {
+          	denomination(order_by: {value:asc}) {
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          		sale: sales_aggregate(where: {userid:{_eq:$userid},created_at:{_gte:$date1,_lte:$date2}}) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          	}
+          	user_by_pk(id: $userid) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_voucher_batch_sales
+        query: |
+          query get_voucher_batch_sales ($where: voucher_bool_exp!, $limit: Int, $offset: Int!, $batch: String!) {
+          	voucher(where: $where, limit: $limit, offset: $offset, order_by: {serial:asc}) {
+          		id
+          		serial
+          		buyer
+          		printed_at
+          		userid
+          		user {
+          			full_name
+          			username
+          		}
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          		reprints {
+          			id
+          		}
+          	}
+          	batch_sale(where: {batch:{_eq:$batch}}) {
+          		batch
+          		amount
+          		new_balance
+          		old_balance
+          		created_at
+          		type
+          		verified
+          		corrected
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          		user {
+          			full_name
+          			username
+          		}
+          		distributor {
+          			name
+          		}
+          	}
+          	voucher_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_archived_voucher_batch_sales
+        query: |
+          query get_archived_voucher_batch_sales ($where: archive_avoucher_bool_exp!, $limit: Int, $offset: Int!, $batch: String!) {
+          	voucher: avoucher(where: $where, limit: $limit, offset: $offset, order_by: {serial:asc}) {
+          		id
+          		serial
+          		buyer
+          		printed_at
+          		userid
+          		user {
+          			full_name
+          			username
+          		}
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          		reprints {
+          			id
+          		}
+          	}
+          	batch_sale(where: {batch:{_eq:$batch}}) {
+          		batch
+          		amount
+          		new_balance
+          		old_balance
+          		created_at
+          		type
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          		user {
+          			full_name
+          			username
+          		}
+          		distributor {
+          			name
+          		}
+          	}
+          	voucher_aggregate: avoucher_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_voucher_stock_information
+        query: |
+          query get_voucher_stock_information ($batch: String!) {
+          	all: voucher_aggregate(where: {voucher_batch:{_eq:$batch}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	archived: avoucher_aggregate(where: {voucher_batch:{_eq:$batch}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	active: voucher_aggregate(where: {_and:{is_active:{_eq:true},is_suspended:{_eq:false},voucher_batch:{_eq:$batch}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	suspended: voucher_aggregate(where: {_and:{is_active:{_eq:true},is_suspended:{_eq:true},voucher_batch:{_eq:$batch}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_all_voucher_count
+        query: |
+          query get_all_voucher_count {
+          	denomination(order_by: {value:asc}) {
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          		sale: sales_aggregate(where: {archived:{_eq:false}}) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		archived: sales_aggregate(where: {archived:{_eq:true}}) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		active: vouchers_aggregate(where: {_and:{is_active:{_eq:true}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: get_wallet_aggregates
+        query: |
+          query get_wallet_aggregates {
+          	money_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	distributor_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	ccd_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          }
+      - name: get_voucher_import_batch
+        query: |
+          query get_voucher_import_batch ($denominationid: uuid!, $limit: Int, $offset: Int!) {
+          	voucher_batch(where: {denominationid:{_eq:$denominationid}}, limit: $limit, offset: $offset, order_by: {is_active:asc,created_at:desc}) {
+          		id
+          		batch
+          		is_active
+          		created_at
+          		denominationid
+          		start
+          		end
+          		exp_date
+          		quantity
+          		import_batch
+          	}
+          	denomination_by_pk(id: $denominationid) {
+          		value
+          		operator {
+          			name
+          		}
+          	}
+          	voucher_batch_aggregate(where: {denominationid:{_eq:$denominationid}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	active: voucher_batch_aggregate(where: {denominationid:{_eq:$denominationid},is_active:{_eq:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_setting_suspend_info
+        query: |
+          query get_setting_suspend_info {
+          	setting(limit: 1, order_by: {created_at:asc}) {
+          		id
+          		suspend_sale
+          	}
+          }
+      - name: get_denominations
+        query: |
+          query get_denominations ($limit: Int!, $offset: Int!) {
+          	denomination(limit: $limit, offset: $offset, order_by: {value:asc}) {
+          		id
+          		value
+          		operatorid
+          		operator {
+          			name
+          		}
+          	}
+          }
+      - name: get_notification_navbar
+        query: |
+          query get_notification_navbar {
+          	notification(where: {seen:{_eq:false}}, order_by: {created_at:desc}) {
+          		id
+          		slug
+          		info
+          		type
+          		seen
+          		created_at
+          		userid
+          		user {
+          			full_name
+          			username
+          		}
+          	}
+          }
+      - name: get_ccd
+        query: |
+          query get_ccd ($limit: Int!, $offset: Int!) {
+          	ccd(limit: $limit, offset: $offset, order_by: {balance:desc}) {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		balance
+          	}
+          }
+      - name: get_roles
+        query: |
+          query get_roles {
+          	role {
+          		id
+          		slug
+          	}
+          }
+      - name: get_teleregions
+        query: |
+          query get_teleregions {
+          	teleregion(order_by: {name:asc}) {
+          		id
+          		name
+          		capital
+          	}
+          }
+      - name: get_regions
+        query: |
+          query get_regions {
+          	region(order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_teleregions_all
+        query: |
+          query get_teleregions_all ($where: teleregion_bool_exp!, $limit: Int, $offset: Int!) {
+          	teleregion(where: $where, limit: $limit, offset: $offset, order_by: {name:asc}) {
+          		id
+          		name
+          		description
+          		capital
+          		users_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          	teleregion_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributor_target_value_view
+        query: |
+          query get_distributor_target_value_view ($where: distributor_target_value_view_bool_exp!, $limit: Int!, $offset: Int!, $order_by: [distributor_target_value_view_order_by!]) {
+          	distributor_target_value_view(where: $where, limit: $limit, offset: $offset, order_by: $order_by) {
+          		distributorid
+          		distributor {
+          			name
+          			phone
+          			sales: users_aggregate(where: {role:{slug:{_eq:"Sales"}}}) {
+          				aggregate {
+          					count
+          				}
+          			}
+          		}
+          		periodid
+          		period {
+          			name
+          			start_date
+          			end_date
+          		}
+          		targetValue: sum
+          		value
+          	}
+          }
+      - name: get_zones_all
+        query: |
+          query get_zones_all ($where: zone_bool_exp!, $limit: Int, $offset: Int!) {
+          	zone(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		name
+          		regionid
+          		region {
+          			name
+          		}
+          	}
+          	zone_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_zones_with_region
+        query: |
+          query get_zones_with_region ($region: String!) {
+          	zone(where: {region:{name:{_eq:$region}}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_user_agents
+        query: |
+          query get_user_agents ($userid: uuid!) {
+          	useragents: user_sub_agents(objects: {userid:$userid}) {
+          		agent
+          		subagent
+          		agentList
+          	}
+          }
+      - name: get_cities_with_zone
+        query: |
+          query get_cities_with_zone ($zone: String!) {
+          	city(where: {zone:{name:{_eq:$zone}}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_denomination_sale_info
+        query: |
+          query get_denomination_sale_info ($where: batch_sale_bool_exp!) {
+          	denomination(order_by: {value:asc}) {
+          		value
+          		operator {
+          			name
+          		}
+          		sale: sales_aggregate(where: $where) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          	}
+          }
+      - name: get_user_log
+        query: |
+          query get_user_log ($where: user_log_bool_exp!, $limit: Int, $offset: Int!) {
+          	user_log(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		slug
+          		info
+          		created_at
+          	}
+          	user_log_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_user_by_pk
+        query: |
+          query get_user_by_pk ($id: uuid!) {
+          	user_by_pk(id: $id) {
+          		id
+          		username
+          		full_name
+          		phone
+          		email
+          		is_active
+          		sex
+          		sellon
+          		parentid
+          		last_login
+          		credit_limit
+          		parent {
+          			full_name
+          			username
+          		}
+          		role {
+          			name
+          		}
+          		distributor {
+          			name
+          		}
+          		regionid
+          		region {
+          			name
+          		}
+          		zoneid
+          		zone {
+          			name
+          		}
+          		cityid
+          		city {
+          			name
+          		}
+          		teleregionid
+          		teleregion {
+          			name
+          			capital
+          		}
+          		area
+          		lng
+          		lat
+          		telebirr_agent
+          		type
+          		pos_availability
+          		created_at
+          		printer_serial
+          		distributors_count: children_aggregate(where: {role:{slug:{_in:["Agent"]}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          		agents_count: children_aggregate(where: {role:{slug:{_in:["Retailer"]}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: get_teleregions_2
+        query: |
+          query get_teleregions_2 {
+          	teleregion(order_by: {name:asc}) {
+          		id
+          		name
+          		description
+          		capital
+          	}
+          }
+      - name: get_admin_users
+        query: |
+          query get_admin_users {
+          	user(where: {role:{slug:{_eq:"Admin"}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_admin_users_1
+        query: |
+          query get_admin_users {
+          	user(where: {role:{slug:{_eq:"Admin"}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_ccds_simple
+        query: |
+          query get_ccds_simple {
+          	ccd(order_by: {created_at:asc}) {
+          		id
+          		name
+          		phone
+          		balance
+          	}
+          }
+      - name: get_load_full
+        query: |
+          query get_load_full ($where: load_bool_exp!, $limit: Int, $offset: Int!) {
+          	load(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc,approverid:desc_nulls_first}) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		ccdid
+          		ccd {
+          			id
+          			name
+          		}
+          		timestamp
+          	}
+          	load_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_ccd_lod_info
+        query: |
+          query get_ccd_lod_info ($timestamp: String!) {
+          	load(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		ccd {
+          			id
+          			name
+          			phone
+          			email
+          			balance
+          			active
+          		}
+          	}
+          	balance_log: ccd_balance_log(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          	}
+          }
+      - name: get_ccds
+        query: |
+          query get_ccds {
+          	ccd(order_by: {created_at:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_reversion
+        query: |
+          query get_reversion ($where: reversion_bool_exp!, $limit: Int, $offset: Int!) {
+          	reversion(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		airtime
+          		ccdid
+          		created_at
+          		timestamp
+          		ccd {
+          			id
+          			name
+          		}
+          	}
+          	reversion_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_ccd_reversion_info
+        query: |
+          query get_ccd_reversion_info ($timestamp: String!) {
+          	reversion(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		airtime
+          		created_at
+          		ccd {
+          			id
+          			name
+          			phone
+          			email
+          			balance
+          			active
+          		}
+          	}
+          	balance_log: ccd_balance_log(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          	}
+          }
+      - name: get_sales_credit_view
+        query: |
+          query get_sales_credit_view ($where: sales_credit_view_bool_exp!, $salescredtwhere: sales_credit_view_bool_exp!, $limit: Int!, $offset: Int!, $userwhere: user_bool_exp!, $order_by: [sales_credit_view_order_by!]) {
+          	sales_credit_view(where: $where, limit: $limit, offset: $offset, order_by: $order_by) {
+          		id
+          		full_name
+          		sex
+          		phone
+          		difference
+          		diff_in_hour
+          		credit_limit
+          		distributor {
+          			name
+          		}
+          	}
+          	total_credit: sales_credit_view_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				difference
+          			}
+          		}
+          	}
+          	sales_w_credit: sales_credit_view_aggregate(where: $salescredtwhere) {
+          		aggregate {
+          			count
+          			sum {
+          				difference
+          			}
+          		}
+          	}
+          	total_sales: user_aggregate(where: $userwhere) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributor_simple
+        query: |
+          query get_distributor_simple {
+          	distributor(order_by: {name:desc}) {
+          		id
+          		name
+          		phone
+          	}
+          }
+      - name: get_sales_channel_count
+        query: |
+          query get_sales_channel_count ($where: user_bool_exp!) {
+          	user: user_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	all: user_aggregate(where: {role:{slug:{_in:["Sales","Agent","Retailer"]}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_sales_channel_count_1
+        query: |
+          query get_sales_channel_count ($where: user_bool_exp!) {
+          	user: user_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	all: user_aggregate(where: {role:{slug:{_in:["Sales","Agent","Retailer"]}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: deposit_aggregate
+        query: |
+          query deposit_aggregate ($where: deposit_bool_exp!, $prev_where: deposit_bool_exp!) {
+          	deposit: deposit_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	prev_deposit: deposit_aggregate(where: $prev_where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: system_stock_and_wallet_aggregate_admin
+        query: |
+          query system_stock_and_wallet_aggregate_admin {
+          	denomination {
+          		id
+          		value
+          		active: vouchers_aggregate(where: {_and:{is_active:{_eq:true}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          	user: money_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	distributor: distributor_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	ccd: ccd_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          }
+      - name: get_target_aggregate
+        query: |
+          query get_target_aggregate ($where: target_value_view_bool_exp!, $limit: Int = 10) {
+          	targetinfo: target_value_view_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				target
+          				value
+          			}
+          		}
+          	}
+          	topsales: target_value_view(where: $where, limit: $limit, order_by: {value:desc_nulls_last}) {
+          		id
+          		userid
+          		full_name
+          		phone
+          		email
+          		sex
+          		targetValue: target
+          		value
+          		distributor_name
+          	}
+          }
+      - name: get_target_aggregate_2
+        query: |
+          query get_target_aggregate_2 ($periodid: uuid!, $userid: uuid!) {
+          	targetinfo: target_value_view_aggregate(where: {periodid:{_eq:$periodid},userid:{_eq:$userid}}) {
+          		aggregate {
+          			sum {
+          				target
+          				value
+          			}
+          		}
+          	}
+          }
+      - name: get_periods
+        query: |
+          query get_periods {
+          	period(order_by: {start_date:desc}) {
+          		id
+          		name
+          		start_date
+          		end_date
+          	}
+          }
+      - name: get_target_value_view
+        query: |
+          query get_target_value_view ($where: target_value_view_bool_exp!, $user_where: user_bool_exp!, $limit: Int!, $offset: Int!, $order_by: [target_value_view_order_by!]) {
+          	target_value_view(where: $where, limit: $limit, offset: $offset, order_by: $order_by) {
+          		id
+          		userid
+          		full_name
+          		phone
+          		email
+          		sex
+          		targetValue: target
+          		value
+          		agents
+          		periodid
+          		name
+          		start_date
+          		end_date
+          		target: target_info {
+          			id
+          			userid
+          			periodid
+          			target
+          		}
+          	}
+          	sales_w_target: target_value_view_aggregate(where: $where) {
+          		aggregate {
+          			count
+          			sum {
+          				target
+          			}
+          		}
+          	}
+          	total_sales: user_aggregate(where: $user_where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_sales_aggregate
+        query: |
+          query get_sales_aggregate ($args: get_sales_aggregate_args!, $where: pseudo_sale_aggregate_bool_exp!, $limit: Int = 10) {
+          	top_agents: get_sales_aggregate(args: $args, where: $where, limit: $limit, order_by: {amount:desc}) {
+          		user {
+          			full_name
+          			phone
+          			sex
+          		}
+          		distributor {
+          			name
+          		}
+          		userid
+          		distributorid
+          		amount
+          	}
+          }
+      - name: get_sales_office_aggregate
+        query: |
+          query get_sales_office_aggregate ($args: get_dist_sales_aggregate_args!, $where: pseudo_dist_sale_aggregate_bool_exp!, $limit: Int = 10) {
+          	top_sales_offices: get_dist_sales_aggregate(args: $args, where: $where, limit: $limit, order_by: {amount:desc}) {
+          		distributor {
+          			name
+          			phone
+          		}
+          		distributorid
+          		amount
+          	}
+          }
+      - name: transfer_aggregate_named
+        query: |
+          query transfer_aggregate_named ($where: transfer_bool_exp!, $prev_where: transfer_bool_exp!) {
+          	transfer: transfer_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	prev_transfer: transfer_aggregate(where: $prev_where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: users_aggregate_admin
+        query: |
+          query users_aggregate_admin ($today: timestamptz!, $last_date: timestamptz!) {
+          	retailers: user_aggregate(where: {role:{name:{_eq:"Retailer"}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	agents: user_aggregate(where: {role:{name:{_eq:"Agent"}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	sales: user_aggregate(where: {role:{name:{_eq:"Sales"}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	distributors: distributor_aggregate(where: {active:{_eq:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	new_users: user_aggregate(where: {created_at:{_gte:$last_date,_lte:$today}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_denomination_sales
+        query: |
+          query get_denomination_sales ($where: batch_sale_bool_exp!, $prev_where: batch_sale_bool_exp!) {
+          	denomination(order_by: {value:asc}) {
+          		sale: sales_aggregate(where: $where) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		prev_sale: sales_aggregate(where: $prev_where) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		value
+          		operator {
+          			name
+          		}
+          	}
+          }
+      - name: get_sales_users
+        query: |
+          query get_sales_users {
+          	user(where: {role:{slug:{_in:["Sales"]}}}, order_by: {created_at:asc}) {
+          		id
+          		full_name
+          		username
+          		sellon
+          	}
+          }
+      - name: get_sales_user_2
+        query: |
+          query get_sales_user_2 {
+          	user(where: {role:{slug:{_in:["Sales"]}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		phone
+          		sex
+          		full_name
+          		sellon
+          	}
+          }
+      - name: get_distributors_name_order
+        query: |
+          query get_distributors_name_order {
+          	distributor(order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_banks_name_order
+        query: |
+          query get_banks_name_order {
+          	bank(order_by: {name:asc}) {
+          		id
+          		name
+          		account
+          	}
+          }
+      - name: get_deposit
+        query: |
+          query get_deposit ($where: deposit_bool_exp!, $limit: Int, $offset: Int!) {
+          	deposit(where: $where, limit: $limit, offset: $offset, order_by: {date:desc,approverid:desc_nulls_first}) {
+          		id
+          		amount
+          		date
+          		is_root
+          		bankid
+          		bank {
+          			name
+          			account
+          		}
+          		ref_number
+          		type
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			username
+          		}
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		auditorid
+          		auditor {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          	deposit_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_admin_banks
+        query: |
+          query get_admin_banks {
+          	bank(where: {distributorid:{_is_null:true}}, order_by: {created_at:asc}) {
+          		id
+          		name
+          		account
+          	}
+          }
+      - name: get_sales_user_with_credit
+        query: |
+          query get_sales_user_with_credit {
+          	user(where: {role:{slug:{_in:["Sales"]}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		phone
+          		sex
+          		full_name
+          		sellon
+          		distributorid
+          		credit {
+          			balance
+          			difference
+          			diff_in_hour
+          			last_transfer
+          		}
+          	}
+          }
+      - name: get_retailer_user_with_balance
+        query: |
+          query get_retailer_user_with_balance {
+          	user(where: {role:{slug:{_in:["Agent"]}},parentid:{_is_null:true}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		phone
+          		sex
+          		full_name
+          		sellon
+          		money {
+          			balance
+          		}
+          	}
+          }
+      - name: get_sales_chain_with_wallet
+        query: |
+          query get_sales_chain_with_wallet {
+          	user(where: {role:{slug:{_in:["Sales","Agent","Retailer"]}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		phone
+          		sex
+          		full_name
+          		sellon
+          		money {
+          			balance
+          		}
+          		role {
+          			name
+          		}
+          	}
+          }
+      - name: get_distributor_by_pk
+        query: |
+          query get_distributor_by_pk ($id: uuid!) {
+          	distributor_by_pk(id: $id) {
+          		id
+          		name
+          		phone
+          		fax
+          		email
+          		sellon
+          		active
+          		max_print
+          		allow_agent_chain
+          		agents_count: users_aggregate(where: {role:{slug:{_in:["Agent"]}},distributorid:{_eq:$id}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          		sales_count: users_aggregate(where: {role:{slug:{_in:["Sales"]}},distributorid:{_eq:$id}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: get_deposit_1
+        query: |
+          query get_deposit ($where: deposit_bool_exp!, $limit: Int, $offset: Int!) {
+          	deposit(where: $where, limit: $limit, offset: $offset, order_by: {date:desc}) {
+          		id
+          		amount
+          		date
+          		bankid
+          		bank {
+          			name
+          		}
+          		ref_number
+          		type
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			username
+          		}
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          	}
+          	deposit_aggregate(where: $where) {
+          		aggregate {
+          			count
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: get_deposit_2
+        query: |
+          query get_deposit_2 ($where: deposit_bool_exp!, $limit: Int, $offset: Int!) {
+          	deposit(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc,approverid:desc_nulls_first}) {
+          		id
+          		amount
+          		date
+          		bankid
+          		bank {
+          			name
+          		}
+          		ref_number
+          		type
+          		deposited_by
+          		check_no
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          	deposit_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_device_info
+        query: |
+          query get_device_info ($userid: uuid!, $limit: Int!, $offset: Int!) {
+          	device_info(where: {userid:{_eq:$userid}}, limit: $limit, offset: $offset, order_by: {updated_at:desc}) {
+          		id
+          		last_used
+          		model
+          		product
+          		version
+          		device
+          		brand
+          		androidid
+          	}
+          	device_info_aggregate(where: {userid:{_eq:$userid}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	user: user_by_pk(id: $userid) {
+          		id
+          		username
+          		full_name
+          		email
+          		phone
+          		role {
+          			name
+          		}
+          	}
+          }
+      - name: topup_aggregate_named
+        query: |
+          query topup_aggregate_named ($where: dtopup_bool_exp!, $deposit_where: deposit_bool_exp!) {
+          	topup: dtopup_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	deposit: deposit_aggregate(where: $deposit_where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: get__distributor_wallet
+        query: |
+          query get__distributor_wallet ($id: uuid!) {
+          	wallet: distributor(where: {id:{_eq:$id}}) {
+          		id
+          		balance
+          	}
+          }
+      - name: get_user_wallet
+        query: |
+          query get_user_wallet ($user_id: uuid!) {
+          	wallet: money(where: {userid:{_eq:$user_id}}) {
+          		id
+          		balance
+          	}
+          }
+      - name: topup_aggregate_named_1
+        query: |
+          query topup_aggregate_named ($where: dtopup_bool_exp!, $prev_where: dtopup_bool_exp!) {
+          	topup: dtopup_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	prev_topup: dtopup_aggregate(where: $prev_where) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: get_topup
+        query: |
+          query get_topup ($where: dtopup_bool_exp!, $limit: Int, $offset: Int!) {
+          	topup: dtopup(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		amount: birr
+          		sellon
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          	}
+          	topup_aggregate: dtopup_aggregate(where: $where) {
+          		aggregate {
+          			count
+          			sum {
+          				airtime
+          			}
+          		}
+          	}
+          }
+      - name: get_sales_with_dist
+        query: |
+          query get_sales_with_dist ($distributorid: uuid!) {
+          	user(where: {role:{slug:{_in:["Sales"]}},distributorid:{_eq:$distributorid}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		phone
+          		sex
+          		full_name
+          		sellon
+          	}
+          }
+      - name: get_users_info
+        query: |
+          query get_users_info ($where: user_bool_exp!, $limit: Int, $offset: Int!, $distributorid: uuid!) {
+          	user(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		username
+          		full_name
+          		parentid
+          		phone
+          		email
+          		sellon
+          		parent {
+          			full_name
+          			username
+          		}
+          		role {
+          			name
+          			icon
+          			color
+          		}
+          		is_active
+          		created_at
+          		sex
+          	}
+          	user_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	total_sales: user_aggregate(where: {role:{slug:{_in:["Manager","Sales","Agent","Retailer"]}},distributorid:{_eq:$distributorid}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	total_active: user_aggregate(where: {is_active:{_eq:true},distributorid:{_eq:$distributorid}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_users_info_2
+        query: |
+          query get_users_info_2 ($where: user_bool_exp!, $limit: Int, $offset: Int!) {
+          	user(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		username
+          		full_name
+          		parentid
+          		phone
+          		email
+          		sellon
+          		parent {
+          			full_name
+          			username
+          		}
+          		role {
+          			name
+          			icon
+          			color
+          		}
+          		distributor {
+          			name
+          		}
+          		ccd {
+          			name
+          		}
+          		teleregionid
+          		teleregion {
+          			id
+          			name
+          			description
+          			capital
+          		}
+          		lng
+          		lat
+          		is_active
+          		created_at
+          		sex
+          	}
+          	user_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	total_sales: user_aggregate(where: {role:{slug:{_in:["Sales","Agent","Retailer"]}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	total_management: user_aggregate(where: {role:{slug:{_in:["Admin","CCD","Manager","Finance","Marketing","Importer","DE"]}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	total_active: user_aggregate(where: {is_active:{_eq:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributors_created_at_order
+        query: |
+          query get_distributors_created_at_order {
+          	distributor(order_by: {created_at:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_ddebit
+        query: |
+          query get_ddebit ($where: ddebit_bool_exp!, $limit: Int, $offset: Int!) {
+          	ddebit(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		amount
+          		created_at
+          		distributor {
+          			name
+          		}
+          	}
+          	ddebit_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributors_info
+        query: |
+          query get_distributors_info ($where: distributor_view_bool_exp!, $limit: Int!, $offset: Int!, $order_by: [distributor_view_order_by!]) {
+          	distributor: distributor_view(where: $where, limit: $limit, offset: $offset, order_by: $order_by) {
+          		id
+          		name
+          		phone
+          		email
+          		active
+          		sellon
+          		balance
+          		topups
+          		payments
+          		difference
+          		max_print
+          		allow_agent_chain
+          	}
+          }
+      - name: get_roles_name
+        query: |
+          query get_roles_name {
+          	role {
+          		id
+          		name
+          	}
+          }
+      - name: get_sales_chain_users
+        query: |
+          query get_sales_chain_users {
+          	user(where: {role:{slug:{_in:["Retailer","Manager","Agent","Sales"]}}}, order_by: {full_name:asc}) {
+          		id
+          		full_name
+          		username
+          		sellon
+          	}
+          }
+      - name: get_retailer_agent_sales_users
+        query: |
+          query get_retailer_agent_sales_users {
+          	user(where: {role:{slug:{_in:["Retailer","Agent","Sales"]}}}, order_by: {full_name:asc}) {
+          		id
+          		username
+          		sellon
+          		full_name
+          	}
+          }
+      - name: get_users_with_wallet
+        query: |
+          query get_users_with_wallet ($where: user_bool_exp!, $limit: Int!, $offset: Int!) {
+          	user(where: $where, limit: $limit, offset: $offset, order_by: {money:{balance:desc_nulls_last}}) {
+          		id
+          		full_name
+          		username
+          		phone
+          		role {
+          			name
+          			color
+          			icon
+          		}
+          		distributor {
+          			name
+          		}
+          		money {
+          			balance
+          		}
+          	}
+          	user_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_telebirr_topup
+        query: |
+          query get_telebirr_topup ($where: telebirr_topup_bool_exp!, $limit: Int, $offset: Int!) {
+          	telebirr_topup(where: $where, limit: $limit, offset: $offset, order_by: {approved_at:desc_nulls_first}) {
+          		id
+          		amount
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		distributorid
+          		distributor {
+          			id
+          			name
+          			phone
+          			balance
+          			sellon
+          		}
+          		ccdid
+          		ccd {
+          			id
+          			name
+          		}
+          		timestamp
+          	}
+          	telebirr_topup_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributor_topup_info
+        query: |
+          query get_distributor_topup_info ($timestamp: String!) {
+          	topup: dtopup(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		distributor {
+          			id
+          			name
+          			phone
+          			balance
+          			sellon
+          		}
+          	}
+          	balance_log: dist_balance_log(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          	}
+          	ccd_balance_log(where: {timestamp:{_eq:$timestamp}}) {
+          		id
+          		amount
+          		old_balance
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          	}
+          }
+      - name: get_dtopup_info
+        query: |
+          query get_dtopup_info ($where: dtopup_bool_exp!, $limit: Int, $offset: Int!) {
+          	dtopup(where: $where, limit: $limit, offset: $offset, order_by: {approved_at:desc_nulls_first}) {
+          		id
+          		amount: birr
+          		sellon
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		distributorid
+          		distributor {
+          			id
+          			name
+          			phone
+          			balance
+          			sellon
+          		}
+          		ccdid
+          		ccd {
+          			id
+          			name
+          		}
+          		timestamp
+          	}
+          	dtopup_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributors
+        query: |
+          query get_distributors {
+          	distributor(order_by: {created_at:asc}) {
+          		id
+          		name
+          		phone
+          		balance
+          		sellon
+          	}
+          }
+      - name: get_ccds_name_order
+        query: |
+          query get_ccds_name_order {
+          	ccd(order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_ccd_balance_log
+        query: |
+          query get_ccd_balance_log ($where: ccd_balance_log_bool_exp!, $limit: Int, $offset: Int!) {
+          	ccd_balance_log(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          		ccd {
+          			name
+          		}
+          	}
+          	ccd_balance_log_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_dist_balance_log
+        query: |
+          query get_dist_balance_log ($where: dist_balance_log_bool_exp!, $limit: Int, $offset: Int!) {
+          	dist_balance_log(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          		distributor {
+          			name
+          		}
+          	}
+          	dist_balance_log_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_import_log
+        query: |
+          query get_import_log ($where: import_log_bool_exp!, $limit: Int, $offset: Int!) {
+          	import_log(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		file_name
+          		import_batch
+          		accepted
+          		imported
+          		exist
+          		rejected
+          		created_at
+          		importer {
+          			full_name
+          			username
+          		}
+          		denomination {
+          			value
+          			operator {
+          				name
+          			}
+          		}
+          	}
+          	import_log_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_retailer_users
+        query: |
+          query get_retailer_users {
+          	user(where: {role:{slug:{_in:["Retailer"]}}}, order_by: {created_at:asc}) {
+          		id
+          		full_name
+          		username
+          		sellon
+          	}
+          }
+      - name: get_notification
+        query: |
+          query get_notification ($limit: Int!, $offset: Int!) {
+          	notification(limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		slug
+          		info
+          		type
+          		seen
+          		userid
+          		created_at
+          		user {
+          			full_name
+          			username
+          		}
+          	}
+          }
+      - name: get_setting
+        query: |
+          query get_setting {
+          	setting(limit: 1, order_by: {created_at:asc}) {
+          		id
+          		name
+          		local_name
+          		phone
+          		fax
+          		line_phone
+          		email
+          		address
+          	}
+          }
+      - name: get_deposit_info
+        query: |
+          query get_deposit_info ($id: uuid!) {
+          	deposit: deposit_by_pk(id: $id) {
+          		id
+          		amount
+          		date
+          		timestamp
+          		bankid
+          		bank {
+          			name
+          			account
+          		}
+          		ref_number
+          		type
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			phone
+          			email
+          		}
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          }
+      - name: get_dtopup_info_1
+        query: |
+          query get_dtopup_info ($id: uuid!) {
+          	dtopup: dtopup_by_pk(id: $id) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			phone
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			phone
+          		}
+          		distributorid
+          		distributor {
+          			id
+          			name
+          			phone
+          			balance
+          			sellon
+          		}
+          		ccdid
+          		ccd {
+          			id
+          			name
+          		}
+          		timestamp
+          	}
+          }
+      - name: get_settings_and_distributor
+        query: |
+          query get_settings_and_distributor ($distributorid: uuid!) {
+          	setting(limit: 1, order_by: {created_at:asc}) {
+          		id
+          		name
+          		local_name
+          		phone
+          		fax
+          		line_phone
+          		email
+          		address
+          	}
+          	distributor: distributor_by_pk(id: $distributorid) {
+          		id
+          		name
+          		phone
+          		balance
+          		sellon
+          	}
+          }
+      - name: get_dtopups
+        query: |
+          query get_dtopups ($where: dtopup_bool_exp!, $limit: Int, $offset: Int!) {
+          	dtopup(where: $where, limit: $limit, offset: $offset, order_by: {approved_at:desc}) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			phone
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			phone
+          		}
+          		timestamp
+          	}
+          }
+      - name: get_load_info
+        query: |
+          query get_load_info ($id: uuid!) {
+          	load: load_by_pk(id: $id) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			phone
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			phone
+          		}
+          		ccdid
+          		ccd {
+          			id
+          			name
+          		}
+          		timestamp
+          	}
+          }
+      - name: get_reversion_info
+        query: |
+          query get_reversion_info ($id: uuid!) {
+          	reversion: reversion_by_pk(id: $id) {
+          		id
+          		airtime
+          		ccdid
+          		created_at
+          		timestamp
+          		ccd {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: get_setting_and_ccd
+        query: |
+          query get_setting_and_ccd ($ccdid: uuid!) {
+          	setting(limit: 1, order_by: {created_at:asc}) {
+          		id
+          		name
+          		local_name
+          		phone
+          		fax
+          		line_phone
+          		email
+          		address
+          	}
+          	ccd: ccd_by_pk(id: $ccdid) {
+          		id
+          		name
+          		phone
+          		balance
+          	}
+          }
+      - name: get_reversion_simple
+        query: |
+          query get_reversion_simple ($where: reversion_bool_exp!, $limit: Int, $offset: Int!) {
+          	load_return: reversion(where: $where, limit: $limit, offset: $offset) {
+          		id
+          		airtime
+          		created_at
+          		timestamp
+          	}
+          }
+      - name: get_loads_info
+        query: |
+          query get_loads_info ($where: load_bool_exp!, $limit: Int, $offset: Int!) {
+          	load(where: $where, limit: $limit, offset: $offset, order_by: {approved_at:desc}) {
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			phone
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			phone
+          		}
+          		timestamp
+          	}
+          }
+      - name: get_transfer_info
+        query: |
+          query get_transfer_info ($id: uuid!) {
+          	transfer: transfer_by_pk(id: $id) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			phone
+          		}
+          		receiver {
+          			full_name
+          			username
+          			phone
+          		}
+          		distributor {
+          			name
+          			phone
+          			balance
+          			active
+          		}
+          		amount
+          		note
+          		is_root
+          		created_at
+          		sell_on
+          		birr
+          		timestamp
+          	}
+          }
+      - name: get_transfer_info_2
+        query: |
+          query get_transfer_info_2 ($id: uuid!) {
+          	transfer: transfer_by_pk(id: $id) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			phone
+          			email
+          			sex
+          			is_active
+          			money {
+          				balance
+          			}
+          			role {
+          				name
+          			}
+          		}
+          		receiver {
+          			full_name
+          			username
+          			phone
+          			email
+          			sex
+          			is_active
+          			money {
+          				balance
+          			}
+          			role {
+          				name
+          			}
+          		}
+          		distributor {
+          			name
+          			phone
+          			balance
+          			active
+          		}
+          		amount
+          		note
+          		is_root
+          		created_at
+          		sell_on
+          		birr
+          		timestamp
+          	}
+          }
+      - name: get_transfer_3
+        query: |
+          query get_transfer_3 ($where: transfer_bool_exp!, $limit: Int, $offset: Int!) {
+          	transfer(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		amount
+          		note
+          		is_root
+          		created_at
+          		sell_on
+          		birr
+          	}
+          	transfer_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_receive_transfer
+        query: |
+          query get_receive_transfer ($where: transfer_bool_exp!, $limit: Int, $offset: Int!) {
+          	transfer(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		receiver {
+          			full_name
+          			username
+          		}
+          		amount
+          		note
+          		is_root
+          		created_at
+          		sell_on
+          		birr
+          	}
+          	transfer_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_all_retailer_users
+        query: |
+          query get_all_retailer_users ($limit: Int, $offset: Int!) {
+          	user(where: {is_active:{_eq:true},role:{name:{_eq:"Retailer"}}}, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		username
+          		full_name
+          		assigned_to
+          		assignee {
+          			full_name
+          			username
+          		}
+          		is_active
+          		created_at
+          	}
+          	user_aggregate(where: {is_active:{_eq:true},role:{name:{_eq:"Retailer"}}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_active_sales_users
+        query: |
+          query get_active_sales_users {
+          	user(where: {is_active:{_eq:true},role:{name:{_eq:"Sales"}}}, order_by: {created_at:desc}) {
+          		id
+          		username
+          		full_name
+          	}
+          }
+      - name: get_transfers
+        query: |
+          query get_transfers ($where: transfer_bool_exp!, $limit: Int, $offset: Int!) {
+          	transfer(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		receiver {
+          			full_name
+          			username
+          			phone
+          			email
+          			money {
+          				balance
+          			}
+          			role {
+          				name
+          			}
+          		}
+          		distributor {
+          			name
+          		}
+          		amount
+          		note
+          		is_root
+          		created_at
+          		sell_on
+          		birr
+          		timestamp
+          	}
+          	transfer_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_distributor_info
+        query: |
+          query get_distributor_info {
+          	distributor(limit: 1) {
+          		id
+          		name
+          		phone
+          		fax
+          		email
+          	}
+          }
+      - name: get_users_created_at_order
+        query: |
+          query get_users_created_at_order {
+          	user(order_by: {created_at:asc}) {
+          		id
+          		username
+          	}
+          }
+      - name: get_deposit_information
+        query: |
+          query get_deposit_information ($where: deposit_bool_exp!, $limit: Int, $offset: Int!) {
+          	deposit(where: $where, limit: $limit, offset: $offset, order_by: {date:desc_nulls_first,created_at:desc}) {
+          		id
+          		amount
+          		created_at
+          		date
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		depositorid
+          		depositor {
+          			id
+          			full_name
+          			username
+          			sellon
+          		}
+          	}
+          	deposit_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_banks
+        query: |
+          query get_banks ($where: bank_bool_exp!, $limit: Int, $offset: Int!) {
+          	bank(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		name
+          		account
+          		branch
+          	}
+          	bank_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_zones
+        query: |
+          query get_zones {
+          	zone(order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_cities
+        query: |
+          query get_cities ($where: city_bool_exp!, $limit: Int, $offset: Int!) {
+          	city(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		name
+          		zoneid
+          		zone {
+          			name
+          			region {
+          				name
+          			}
+          		}
+          	}
+          	city_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_setting_all
+        query: |
+          query get_setting_all {
+          	setting(limit: 1, order_by: {created_at:asc}) {
+          		id
+          		name
+          		local_name
+          		phone
+          		fax
+          		line_phone
+          		email
+          		address
+          		to_ind_dist
+          		to_ind_sales
+          		to_agents
+          		to_dir_dist
+          		to_ind_agents
+          	}
+          }
+      - name: get_period_all
+        query: |
+          query get_period_all ($where: period_bool_exp!, $limit: Int, $offset: Int!) {
+          	period(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		name
+          		start_date
+          		end_date
+          	}
+          	period_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_regions_all
+        query: |
+          query get_regions_all ($where: region_bool_exp!, $limit: Int, $offset: Int!) {
+          	region(where: $where, limit: $limit, offset: $offset, order_by: {name:asc}) {
+          		id
+          		name
+          		users_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          	region_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_roles_info
+        query: |
+          query get_roles_info ($where: role_bool_exp!, $limit: Int, $offset: Int!) {
+          	role(where: $where, limit: $limit, offset: $offset, order_by: {name:asc}) {
+          		id
+          		name
+          		slug
+          		description
+          		icon
+          		color
+          	}
+          	role_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: update_ccd_by_pk
+        query: |
+          mutation update_ccd_by_pk ($id: uuid!, $active: Boolean!) {
+          	update_ccd_by_pk(pk_columns: {id:$id}, _set: {active:$active}) {
+          		id
+          		active
+          	}
+          }
+      - name: update_distributor_by_pk
+        query: |
+          mutation update_distributor_by_pk ($id: uuid!, $active: Boolean!) {
+          	update_distributor_by_pk(pk_columns: {id:$id}, _set: {active:$active}) {
+          		id
+          		active
+          	}
+          }
+      - name: activate_deactivate
+        query: |
+          mutation activate_deactivate ($userid: uuid!, $activate: Boolean!) {
+          	activate_deactivate(objects: {userid:$userid,activate:$activate}) {
+          		status
+          	}
+          }
+      - name: suspend_batch
+        query: |
+          mutation suspend_batch ($denominationid: uuid!, $batch: String!, $suspend: Boolean!) {
+          	suspend_batch(objects: {denominationid:$denominationid,batch:$batch,suspend:$suspend}) {
+          		count
+          	}
+          }
+      - name: update_deposit_by_pk
+        query: |
+          mutation update_deposit_by_pk ($id: uuid!) {
+          	update_deposit_by_pk(pk_columns: {id:$id}) {
+          		id
+          		approverid
+          	}
+          }
+      - name: update_deposit_by_pk_clear
+        query: |
+          mutation update_deposit_by_pk_clear ($id: uuid!) {
+          	update_deposit_by_pk(pk_columns: {id:$id}) {
+          		id
+          		auditorid
+          	}
+          }
+      - name: remove_deposit_approval
+        query: |
+          mutation remove_deposit_approval ($depositid: uuid!) {
+          	remove_deposit_approval(objects: {depositid:$depositid}) {
+          		status
+          	}
+          }
+      - name: dtopup_approve
+        query: |
+          mutation dtopup_approve ($dtopupid: uuid!) {
+          	dtopup_approve(objects: {dtopupid:$dtopupid}) {
+          		status
+          	}
+          }
+      - name: dtopup_takeback
+        query: |
+          mutation dtopup_takeback ($dtopupid: uuid!) {
+          	dtopup_takeback(objects: {dtopupid:$dtopupid}) {
+          		status
+          	}
+          }
+      - name: change_denomination
+        query: |
+          mutation change_denomination ($batchid: uuid!, $denominationid: uuid!) {
+          	change_denomination(objects: {batchid:$batchid,denominationid:$denominationid}) {
+          		count
+          	}
+          }
+      - name: load_approve
+        query: |
+          mutation load_approve ($loadid: uuid!) {
+          	load_approve(objects: {loadid:$loadid}) {
+          		status
+          	}
+          }
+      - name: load_takeback
+        query: |
+          mutation load_takeback ($loadid: uuid!) {
+          	load_takeback(objects: {loadid:$loadid}) {
+          		status
+          	}
+          }
+      - name: payment_approve
+        query: |
+          mutation payment_approve ($paymentid: uuid!) {
+          	payment_approve(objects: {paymentid:$paymentid}) {
+          		status
+          	}
+          }
+      - name: payment_approve_and_topup
+        query: |
+          mutation payment_approve_and_topup ($paymentid: uuid!) {
+          	approve_from_payment(objects: {paymentid:$paymentid}) {
+          		status
+          	}
+          }
+      - name: insert_setting_one
+        query: |
+          mutation insert_setting_one ($object: setting_insert_input!) {
+          	insert_setting_one(object: $object, on_conflict: {constraint:setting_pkey,update_columns:suspend_sale}) {
+          		id
+          		suspend_sale
+          	}
+          }
+      - name: telebirr_topup_approve
+        query: |
+          mutation telebirr_topup_approve ($telebirr_topupid: uuid!) {
+          	telebirr_topup_approve(objects: {telebirr_topupid:$telebirr_topupid}) {
+          		status
+          	}
+          }
+      - name: dtopup_takeback_1
+        query: |
+          mutation dtopup_takeback ($dtopupid: uuid!) {
+          	dtopup_takeback(objects: {dtopupid:$dtopupid}) {
+          		status
+          	}
+          }
+      - name: topup_approve
+        query: |
+          mutation topup_approve ($topupid: uuid!) {
+          	topup_approve(objects: {topupid:$topupid}) {
+          		status
+          	}
+          }
+      - name: update_notification_by_pk
+        query: |
+          mutation update_notification_by_pk ($id: uuid!) {
+          	update_notification_by_pk(pk_columns: {id:$id}, _set: {seen:true}) {
+          		id
+          		seen
+          	}
+          }
+      - name: update_notification
+        query: |
+          mutation update_notification ($ids: [uuid!]) {
+          	update_notification(where: {id:{_in:$ids}}, _set: {seen:true}) {
+          		affected_rows
+          	}
+          }
+      - name: insert_ccd
+        query: |
+          mutation insert_ccd ($name: String!, $phone: String!, $fax: String, $email: String) {
+          	insert_ccd(objects: {name:$name,phone:$phone,fax:$fax,email:$email}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: update_ccd
+        query: |
+          mutation update_ccd ($id: uuid!, $name: String!, $phone: String!, $fax: String, $email: String!) {
+          	update_ccd(_set: {name:$name,phone:$phone,fax:$fax,email:$email}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: update_ccd_for_manger
+        query: |
+          mutation update_ccd_for_manger ($id: uuid!, $name: String!, $phone: String!, $fax: String, $email: String!) {
+          	update_ccd(_set: {name:$name,phone:$phone,fax:$fax,email:$email}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: create_ccd_and_user
+        query: |
+          mutation create_ccd_and_user ($username: String!, $password: String!, $full_name: String!, $phone: String!, $roleid: uuid!, $name: String!, $sellon: numeric, $city: String, $zone: String, $region: String, $teleregionid: uuid!, $area: String!, $sex: String!) {
+          	create_ccd_and_user(objects: {username:$username,password:$password,full_name:$full_name,name:$name,sellon:$sellon,phone:$phone,roleid:$roleid,teleregionid:$teleregionid,area:$area,region:$region,zone:$zone,city:$city,sex:$sex}) {
+          		status
+          	}
+          }
+      - name: insert_load
+        query: |
+          mutation insert_load ($ccdid: uuid!, $airtime: numeric!) {
+          	insert_load(objects: {ccdid:$ccdid,airtime:$airtime}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: insert_load_1
+        query: |
+          mutation insert_load ($airtime: numeric!) {
+          	insert_load(objects: {airtime:$airtime}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: update_load
+        query: |
+          mutation update_load ($id: uuid!, $ccdid: uuid!, $airtime: numeric!) {
+          	update_load(_set: {ccdid:$ccdid,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: update_load_1
+        query: |
+          mutation update_load ($id: uuid!, $airtime: numeric!) {
+          	update_load(_set: {airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: insert_deposit
+        query: |
+          mutation insert_deposit ($amount: numeric!, $bankid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	insert_deposit(objects: {amount:$amount,bankid:$bankid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_deposit
+        query: |
+          mutation update_deposit ($id: uuid!, $amount: numeric!, $bankid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	update_deposit(_set: {amount:$amount,bankid:$bankid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: insert_deposit_2
+        query: |
+          mutation insert_deposit_2 ($amount: numeric!, $bankid: uuid, $distributorid: uuid, $depositorid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	insert_deposit(objects: {amount:$amount,bankid:$bankid,depositorid:$depositorid,distributorid:$distributorid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_deposit_2
+        query: |
+          mutation update_deposit_2 ($id: uuid!, $amount: numeric!, $bankid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	update_deposit(_set: {amount:$amount,bankid:$bankid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_user_parent
+        query: |
+          mutation update_user_parent ($id: uuid!, $parentid: uuid!) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {parentid:$parentid}) {
+          		id
+          	}
+          }
+      - name: insert_distributor
+        query: |
+          mutation insert_distributor ($name: String!, $phone: String!, $fax: String, $email: String, $max_print: Int!, $allow_agent_chain: Boolean!) {
+          	insert_distributor(objects: {name:$name,phone:$phone,fax:$fax,email:$email,max_print:$max_print,allow_agent_chain:$allow_agent_chain}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: update_distributor
+        query: |
+          mutation update_distributor ($id: uuid!, $name: String!, $phone: String!, $fax: String, $email: String!, $sellon: numeric!, $max_print: Int!, $allow_agent_chain: Boolean!) {
+          	update_distributor(_set: {name:$name,phone:$phone,fax:$fax,email:$email,sellon:$sellon,max_print:$max_print,allow_agent_chain:$allow_agent_chain}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: update_distributor_for_manager
+        query: |
+          mutation update_distributor_for_manager ($id: uuid!, $name: String!, $phone: String!, $fax: String, $email: String!) {
+          	update_distributor(_set: {name:$name,phone:$phone,fax:$fax,email:$email}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          			phone
+          			fax
+          			email
+          		}
+          	}
+          }
+      - name: create_dist_and_user
+        query: |
+          mutation create_dist_and_user ($username: String!, $password: String!, $full_name: String!, $phone: String!, $roleid: uuid!, $name: String!, $sellon: numeric, $city: String, $zone: String, $region: String, $teleregionid: uuid!, $area: String!, $sex: String!) {
+          	create_dist_and_user(objects: {username:$username,password:$password,full_name:$full_name,name:$name,sellon:$sellon,phone:$phone,roleid:$roleid,teleregionid:$teleregionid,area:$area,region:$region,zone:$zone,city:$city,sex:$sex}) {
+          		status
+          	}
+          }
+      - name: insert_telebirr_topup
+        query: |
+          mutation insert_telebirr_topup ($distributorid: uuid!, $amount: numeric!) {
+          	insert_telebirr_topup(objects: {distributorid:$distributorid,amount:$amount}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: insert_telebirr_topup_for_managers
+        query: |
+          mutation insert_telebirr_topup_for_managers ($amount: numeric!) {
+          	insert_telebirr_topup(objects: {amount:$amount}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: update_telebirr_topup
+        query: |
+          mutation update_telebirr_topup ($id: uuid!, $distributorid: uuid!, $amount: numeric!) {
+          	update_telebirr_topup(_set: {distributorid:$distributorid,amount:$amount}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: update_telebirr_topup_for_manager
+        query: |
+          mutation update_telebirr_topup_for_manager ($id: uuid!, $amount: numeric!) {
+          	update_telebirr_topup(_set: {amount:$amount}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: insert_dtopup
+        query: |
+          mutation insert_dtopup ($distributorid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	insert_dtopup(objects: {distributorid:$distributorid,sellon:$sellon,amount:$amount,airtime:$airtime}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: insert_dtopup_for_manager
+        query: |
+          mutation insert_dtopup_for_manager ($amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	insert_dtopup(objects: {sellon:$sellon,amount:$amount,airtime:$airtime}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: update_dtopup
+        query: |
+          mutation update_dtopup ($id: uuid!, $distributorid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	update_dtopup(_set: {distributorid:$distributorid,sellon:$sellon,amount:$amount,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: update_dtopup_for_manager
+        query: |
+          mutation update_dtopup_for_manager ($id: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	update_dtopup(_set: {sellon:$sellon,amount:$amount,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: update_profile
+        query: |
+          mutation update_profile ($id: uuid!, $full_name: String!, $email: String!, $phone: String!) {
+          	update_profile(objects: {id:$id,full_name:$full_name,email:$email,phone:$phone}) {
+          		status
+          	}
+          }
+      - name: update_password
+        query: |
+          mutation update_password ($new_password: String!, $old_password: String!) {
+          	update_password(objects: {new_password:$new_password,old_password:$old_password}) {
+          		status
+          	}
+          }
+      - name: insert_bank
+        query: |
+          mutation insert_bank ($name: String!, $branch: String!, $account: String!) {
+          	insert_bank(objects: {name:$name,branch:$branch,account:$account}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: insert_city
+        query: |
+          mutation insert_city ($zoneid: uuid!, $name: String!) {
+          	insert_city(objects: {zoneid:$zoneid,name:$name}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_city
+        query: |
+          mutation update_city ($id: uuid!, $zoneid: uuid!, $name: String!) {
+          	update_city(_set: {zoneid:$zoneid,name:$name}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_setting
+        query: |
+          mutation update_setting ($id: uuid!, $name: String!, $local_name: String!, $phone: String!, $fax: String!, $line_phone: String!, $email: String!, $address: String!, $to_dir_dist: numeric, $to_agents: numeric, $to_ind_sales: numeric, $to_ind_dist: numeric, $to_ind_agents: numeric) {
+          	update_setting(_set: {name:$name,local_name:$local_name,phone:$phone,fax:$fax,email:$email,line_phone:$line_phone,address:$address,to_ind_dist:$to_ind_dist,to_ind_sales:$to_ind_sales,to_agents:$to_agents,to_dir_dist:$to_dir_dist,to_ind_agents:$to_ind_agents}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: insert_period
+        query: |
+          mutation insert_period ($name: String!, $start_date: timestamptz!, $end_date: timestamptz!) {
+          	insert_period(objects: {name:$name,start_date:$start_date,end_date:$end_date}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_period
+        query: |
+          mutation update_period ($id: uuid!, $name: String!, $start_date: timestamptz!, $end_date: timestamptz!) {
+          	update_period(_set: {name:$name,start_date:$start_date,end_date:$end_date}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: insert_region
+        query: |
+          mutation insert_region ($name: String!) {
+          	insert_region(objects: {name:$name}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: update_region
+        query: |
+          mutation update_region ($id: uuid!, $name: String!) {
+          	update_region(_set: {name:$name}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: update_role
+        query: |
+          mutation update_role ($id: uuid!, $color: String!, $icon: String!) {
+          	update_role(_set: {color:$color,icon:$icon}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: insert_teleregion
+        query: |
+          mutation insert_teleregion ($name: String!, $description: String!, $capital: String!) {
+          	insert_teleregion(objects: {name:$name,description:$description,capital:$capital}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: update_teleregion
+        query: |
+          mutation update_teleregion ($id: uuid!, $name: String!, $description: String!, $capital: String!) {
+          	update_teleregion(_set: {name:$name,description:$description,capital:$capital}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: insert_zone
+        query: |
+          mutation insert_zone ($regionid: uuid!, $name: String!) {
+          	insert_zone(objects: {regionid:$regionid,name:$name}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: update_zone
+        query: |
+          mutation update_zone ($id: uuid!, $regionid: uuid!, $name: String!) {
+          	update_zone(_set: {regionid:$regionid,name:$name}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: target_balance
+        query: |
+          mutation target_balance ($userid: uuid!, $periodid: uuid!, $target: numeric!) {
+          	insert_target(objects: {periodid:$periodid,userid:$userid,target:$target}) {
+          		affected_rows
+          	}
+          }
+      - name: update_period_1
+        query: |
+          mutation update_period ($id: uuid!, $userid: uuid!, $periodid: uuid!, $target: numeric!) {
+          	update_target(_set: {periodid:$periodid,userid:$userid,target:$target}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			target
+          		}
+          	}
+          }
+      - name: transfer_balance
+        query: |
+          mutation transfer_balance ($receiverid: uuid!, $amount: numeric!, $note: String, $sellon: numeric) {
+          	transfer_distributor_balance(objects: {receiverid:$receiverid,amount:$amount,sell_on:$sellon,note:$note}) {
+          		status
+          	}
+          }
+      - name: return_balance
+        query: |
+          mutation return_balance ($receiverid: uuid!, $amount: numeric!, $note: String) {
+          	return_balance(objects: {receiverid:$receiverid,amount:$amount,note:$note}) {
+          		status
+          	}
+          }
+      - name: assign_retailer
+        query: |
+          mutation assign_retailer ($retailers: [uuid!], $salesid: uuid!) {
+          	update_user(where: {id:{_in:$retailers}}, _set: {assigned_to:$salesid}) {
+          		affected_rows
+          	}
+          }
+      - name: create_user
+        query: |
+          mutation create_user ($username: String!, $password: String!, $full_name: String!, $email: String, $phone: String!, $roleid: uuid!, $distributorid: uuid, $city: String, $zone: String, $region: String, $teleregionid: uuid!, $area: String!, $sex: String!, $ccdid: uuid, $pos_availability: Boolean!, $telebirr_agent: Boolean!, $printer_serial: String, $birth_date: timestamptz) {
+          	create_user(objects: {username:$username,password:$password,full_name:$full_name,email:$email,phone:$phone,roleid:$roleid,distributorid:$distributorid,teleregionid:$teleregionid,area:$area,region:$region,zone:$zone,city:$city,sex:$sex,ccdid:$ccdid,pos_availability:$pos_availability,telebirr_agent:$telebirr_agent,printer_serial:$printer_serial,birth_date:$birth_date}) {
+          		status
+          	}
+          }
+      - name: reset_password
+        query: |
+          mutation reset_password ($userid: uuid!, $new_password: String!) {
+          	reset_password(objects: {userid:$userid,new_password:$new_password}) {
+          		status
+          	}
+          }
+      - name: update_user_location_info
+        query: |
+          mutation update_user_location_info ($id: uuid!, $regionid: uuid, $zoneid: uuid, $cityid: uuid, $area: String, $teleregionid: uuid) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {regionid:$regionid,zoneid:$zoneid,cityid:$cityid,area:$area,teleregionid:$teleregionid}) {
+          		id
+          	}
+          }
+      - name: update_user_other_info
+        query: |
+          mutation update_user_other_info ($id: uuid!, $type: String, $telebirr_agent: Boolean, $pos_availability: Boolean, $printer_serial: String) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {type:$type,telebirr_agent:$telebirr_agent,pos_availability:$pos_availability,printer_serial:$printer_serial}) {
+          		id
+          	}
+          }
+      - name: update_user_basic_info
+        query: |
+          mutation update_user_basic_info ($id: uuid!, $full_name: String!, $phone: String!, $email: String!, $sex: String!, $credit_limit: numeric!) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {full_name:$full_name,phone:$phone,email:$email,sex:$sex,credit_limit:$credit_limit}) {
+          		id
+          	}
+          }
+      - name: insert_denomination
+        query: |
+          mutation insert_denomination ($value: Int!, $operatorid: uuid!) {
+          	insert_denomination(objects: {value:$value,operatorid:$operatorid}) {
+          		returning {
+          			id
+          			value
+          		}
+          	}
+          }
+      - name: insert_operator
+        query: |
+          mutation insert_operator ($name: String!, $description: String!, $url: String) {
+          	insert_operator(objects: {name:$name,description:$description,url:$url}) {
+          		returning {
+          			id
+          			name
+          			description
+          			url
+          		}
+          	}
+          }
+      - name: update_operator
+        query: |
+          mutation update_operator ($id: uuid!, $name: String!, $description: String!, $url: String) {
+          	update_operator(_set: {name:$name,description:$description,url:$url}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			name
+          			description
+          			url
+          		}
+          	}
+          }
+      - name: mobile_sales_deposit_mobile
+        query: |
+          query mobile_sales_deposit_mobile ($limit: Int!, $offset: Int!) {
+          	deposit(limit: $limit, offset: $offset, order_by: {approverid:desc_nulls_first,date:desc}) {
+          		id
+          		amount
+          		date
+          		bankid
+          		bank {
+          			id
+          			name
+          			account
+          		}
+          		ref_number
+          		type
+          		approverid
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			username
+          		}
+          		approver {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          }
+      - name: mobile_approve_deposit
+        query: |
+          mutation mobile_approve_deposit ($id: uuid!) {
+          	update_deposit_by_pk(pk_columns: {id:$id}) {
+          		id
+          		approverid
+          	}
+          }
+      - name: mobile_delete_topup
+        query: |
+          mutation mobile_delete_topup ($id: uuid!) {
+          	delete_topup_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: mobile_update_distributor_by_pk
+        query: |
+          mutation mobile_update_distributor_by_pk ($id: uuid!, $active: Boolean!) {
+          	update_distributor_by_pk(pk_columns: {id:$id}, _set: {active:$active}) {
+          		id
+          		active
+          	}
+          }
+      - name: mobile_all_distributors
+        query: |
+          query mobile_all_distributors ($limit: Int!, $offset: Int!) {
+          	distributor(limit: $limit, offset: $offset, order_by: {balance:desc}) {
+          		id
+          		name
+          		phone
+          		active
+          		sellon
+          		balance
+          	}
+          }
+      - name: mobile_search_distributor
+        query: |
+          query mobile_search_distributor ($query: String!) {
+          	distributor(where: {_or:[{phone:{_ilike:$query}},{name:{_ilike:$query}}]}) {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		sellon
+          		balance
+          	}
+          }
+      - name: mobile_distributor_profile
+        query: |
+          query mobile_distributor_profile {
+          	distributor {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		sellon
+          		balance
+          	}
+          }
+      - name: mobile_ccd_profile
+        query: |
+          query mobile_ccd_profile {
+          	ccd {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		balance
+          	}
+          }
+      - name: mobile_distributor_wallet_profile
+        query: |
+          query mobile_distributor_wallet_profile {
+          	denomination {
+          		id
+          		value
+          		operator {
+          			id
+          			name
+          		}
+          	}
+          	distributor {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		sellon
+          		balance
+          	}
+          }
+      - name: mobile_update_distributor
+        query: |
+          mutation mobile_update_distributor ($id: uuid!, $name: String!, $phone: String!, $fax: String, $email: String!) {
+          	update_distributor(_set: {name:$name,phone:$phone,fax:$fax,email:$email}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: mobile_distributor_topups
+        query: |
+          query mobile_distributor_topups ($limit: Int!, $offset: Int!) {
+          	dtopup(limit: $limit, offset: $offset, order_by: {approved_at:desc_nulls_first,created_at:desc}) {
+          		id
+          		amount
+          		sellon
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			id
+          			name
+          			username: name
+          			sellon
+          		}
+          	}
+          }
+      - name: mobile_create_dist_and_user
+        query: |
+          mutation mobile_create_dist_and_user ($username: String!, $password: String!, $full_name: String!, $name: String!, $sellon: numeric, $phone: String!, $roleid: uuid!, $regionid: uuid!, $area: String!) {
+          	create_dist_and_user(objects: {username:$username,password:$password,full_name:$full_name,name:$name,sellon:$sellon,phone:$phone,roleid:$roleid,regionid:$regionid,area:$area}) {
+          		status
+          	}
+          }
+      - name: mobile_all_distributor_topups
+        query: |
+          query mobile_all_distributor_topups ($limit: Int!, $offset: Int!, $id: uuid!) {
+          	dtopup(limit: $limit, offset: $offset, where: {distributorid:{_eq:$id}}, order_by: {approved_at:desc_nulls_first,created_at:desc}) {
+          		id
+          		amount
+          		sellon
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			id
+          			name
+          			username: name
+          			sellon
+          		}
+          	}
+          }
+      - name: mobile_all_payments
+        query: |
+          query mobile_all_payments ($limit: Int!, $offset: Int!) {
+          	payment(limit: $limit, offset: $offset, order_by: {approverid:desc_nulls_first,date:desc}) {
+          		id
+          		amount
+          		date
+          		bankid
+          		bank {
+          			id
+          			name
+          			account
+          		}
+          		ref_number
+          		approved
+          		type
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			username
+          		}
+          		approver {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          }
+      - name: mobile_all_dist_payments
+        query: |
+          query mobile_all_dist_payments ($limit: Int!, $offset: Int!, $id: uuid!) {
+          	payment(limit: $limit, offset: $offset, where: {distributorid:{_eq:$id}}, order_by: {approverid:desc_nulls_first,date:desc}) {
+          		id
+          		amount
+          		date
+          		bankid
+          		bank {
+          			id
+          			name
+          			account
+          		}
+          		ref_number
+          		approved
+          		type
+          		deposited_by
+          		check_no
+          		creator {
+          			full_name
+          			username
+          		}
+          		approver {
+          			full_name
+          			username
+          		}
+          		distributorid
+          		distributor {
+          			name
+          		}
+          	}
+          }
+      - name: mobile_create_payment
+        query: |
+          mutation mobile_create_payment ($amount: numeric!, $bankid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	insert_deposit(objects: {amount:$amount,bankid:$bankid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: mobile_update_payment
+        query: |
+          mutation mobile_update_payment ($id: uuid!, $amount: numeric!, $bankid: uuid, $ref_number: String, $type: String!, $check_no: String, $deposited_by: String, $date: timestamptz!) {
+          	update_deposit(_set: {amount:$amount,bankid:$bankid,ref_number:$ref_number,type:$type,check_no:$check_no,deposited_by:$deposited_by,date:$date}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          		}
+          	}
+          }
+      - name: mobile_distributor_banks
+        query: |
+          query mobile_distributor_banks {
+          	bank(where: {distributorid:{_is_null:true}}, order_by: {created_at:asc}) {
+          		id
+          		name
+          		account
+          	}
+          }
+      - name: mobile_all_topups
+        query: |
+          query mobile_all_topups ($limit: Int, $offset: Int!) {
+          	topup(limit: $limit, offset: $offset, order_by: {approved_at:desc_nulls_first,created_at:desc}) {
+          		id
+          		amount
+          		sellon
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          		}
+          		userid
+          		user {
+          			id
+          			full_name
+          			username
+          			sellon
+          		}
+          	}
+          }
+      - name: mobile_receiving_users
+        query: |
+          query mobile_receiving_users {
+          	user(where: {role:{slug:{_in:["Retailer","Sales"]}}}, order_by: {created_at:asc}) {
+          		id
+          		username
+          		sellon
+          	}
+          }
+      - name: mobile_insert_topup
+        query: |
+          mutation mobile_insert_topup ($userid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	insert_topup(objects: {userid:$userid,sellon:$sellon,amount:$amount,airtime:$airtime}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: mobile_update_topup
+        query: |
+          mutation mobile_update_topup ($id: uuid!, $userid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	update_topup(_set: {userid:$userid,sellon:$sellon,amount:$amount,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: mobile_insert_dtopup
+        query: |
+          mutation mobile_insert_dtopup ($distributorid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	insert_dtopup(objects: {distributorid:$distributorid,sellon:$sellon,amount:$amount,airtime:$airtime}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: mobile_update_dtopup
+        query: |
+          mutation mobile_update_dtopup ($id: uuid!, $distributorid: uuid!, $amount: numeric!, $sellon: numeric!, $airtime: numeric!) {
+          	update_dtopup(_set: {distributorid:$distributorid,sellon:$sellon,amount:$amount,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			amount
+          		}
+          	}
+          }
+      - name: mobile_approve_topup
+        query: |
+          mutation mobile_approve_topup ($topupid: uuid!) {
+          	topup_approve(objects: {topupid:$topupid}) {
+          		status
+          	}
+          }
+      - name: mobile_transfer_receiver_users
+        query: |
+          query mobile_transfer_receiver_users {
+          	user(where: {role:{slug:{_in:["Retailer","Sales"]}}}, order_by: {created_at:asc}) {
+          		id
+          		full_name
+          		username
+          		sellon
+          	}
+          }
+      - name: mobile_received_transfers
+        query: |
+          query mobile_received_transfers ($receiver_id: uuid!) {
+          	transfer(where: {receiverid:{_eq:$receiver_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		receiver {
+          			full_name
+          			username
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_sent_transfers
+        query: |
+          query mobile_sent_transfers ($senderid: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {senderid:{_eq:$senderid}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		note
+          		receiver {
+          			full_name
+          			username
+          		}
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_all_users
+        query: |
+          query mobile_all_users ($limit: Int, $offset: Int!, $parentid: uuid!) {
+          	role {
+          		id
+          		name
+          	}
+          	user(where: {parentid:{_eq:$parentid}}, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		sex
+          		id
+          		username
+          		full_name
+          		assigned_to
+          		phone
+          		email
+          		sellon
+          		money {
+          			balance
+          		}
+          		assignee {
+          			full_name
+          			username
+          		}
+          		city {
+          			id
+          			name
+          		}
+          		zone {
+          			id
+          			name
+          		}
+          		region {
+          			id
+          			name
+          		}
+          		is_active
+          		created_at
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_all_user_with_slug
+        query: |
+          query mobile_all_user_with_slug ($limit: Int, $offset: Int!, $parentid: uuid!, $slug: String!) {
+          	user(where: {role:{slug:{_eq:$slug}},parentid:{_eq:$parentid}}, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          		sex
+          		id
+          		username
+          		full_name
+          		assigned_to
+          		phone
+          		email
+          		sellon
+          		money {
+          			balance
+          		}
+          		assignee {
+          			full_name
+          			username
+          		}
+          		city {
+          			id
+          			name
+          		}
+          		zone {
+          			id
+          			name
+          		}
+          		region {
+          			id
+          			name
+          		}
+          		is_active
+          		created_at
+          	}
+          }
+      - name: mobile_all_dist_sales
+        query: |
+          query mobile_all_dist_sales ($limit: Int, $offset: Int!) {
+          	user(where: {parentid:{_is_null:true},role:{slug:{_in:["Sales"]}}}, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		sex
+          		id
+          		username
+          		full_name
+          		assigned_to
+          		phone
+          		email
+          		sellon
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          		assignee {
+          			full_name
+          			username
+          		}
+          		city {
+          			id
+          			name
+          		}
+          		zone {
+          			id
+          			name
+          		}
+          		region {
+          			id
+          			name
+          		}
+          		is_active
+          		created_at
+          	}
+          }
+      - name: mobile_all_roles
+        query: |
+          query mobile_all_roles {
+          	role {
+          		id
+          		name
+          	}
+          }
+      - name: mobile_search_regions
+        query: |
+          query mobile_search_regions ($pattern: String!) {
+          	region(order_by: {name:asc}, where: {name:{_ilike:$pattern}}) {
+          		id
+          		name
+          	}
+          }
+      - name: mobile_search_zones
+        query: |
+          query mobile_search_zones ($regionid: uuid!, $pattern: String!) {
+          	zone(where: {regionid:{_eq:$regionid},name:{_ilike:$pattern}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: mobile_search_cities
+        query: |
+          query mobile_search_cities ($zoneid: uuid!, $pattern: String!) {
+          	city(where: {name:{_ilike:$pattern},zoneid:{_eq:$zoneid}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: mobile_create_v2_user
+        query: |
+          mutation mobile_create_v2_user ($username: String!, $password: String!, $full_name: String!, $phone: String!, $roleid: uuid!, $distributorid: uuid, $regionid: uuid!, $area: String!) {
+          	create_user(objects: {username:$username,password:$password,full_name:$full_name,phone:$phone,roleid:$roleid,distributorid:$distributorid,regionid:$regionid,area:$area}) {
+          		status
+          	}
+          }
+      - name: mobile_activate_deactivate_user
+        query: |
+          mutation mobile_activate_deactivate_user ($id: uuid!, $is_active: Boolean!) {
+          	activate_deactivate(objects: {userid:$id,activate:$is_active}) {
+          		status
+          	}
+          }
+      - name: mobile_all_dist_agents
+        query: |
+          query mobile_all_dist_agents ($id: uuid!, $limit: Int!, $offset: Int!) {
+          	user(limit: $limit, offset: $offset, where: {role:{slug:{_eq:"Retailer"}},distributorid:{_eq:$id},parentid:{_eq:null}}) {
+          		id
+          		sex
+          		full_name
+          		username
+          		phone
+          		sellon
+          		is_active
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_all_agents
+        query: |
+          query mobile_all_agents ($id: uuid!, $limit: Int!, $offset: Int!) {
+          	user(limit: $limit, offset: $offset, where: {role:{slug:{_eq:"Retailer"}},parentid:{_eq:$id}}) {
+          		id
+          		sex
+          		full_name
+          		username
+          		phone
+          		sellon
+          		is_active
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_search_agent_for_manager
+        query: |
+          query mobile_search_agent_for_manager ($query: String!) {
+          	user(where: {_or:[{phone:{_ilike:$query}},{full_name:{_ilike:$query}},{username:{_ilike:$query}}],parentid:{_is_null:true},role:{slug:{_neq:"Manager"}}}) {
+          		sex
+          		id
+          		full_name
+          		username
+          		phone
+          		sellon
+          		is_active
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_search_agents
+        query: |
+          query mobile_search_agents ($id: uuid!, $query: String!) {
+          	user(where: {_or:[{phone:{_ilike:$query}},{username:{_ilike:$query}},{full_name:{_ilike:$query}}],parentid:{_eq:$id}}) {
+          		sex
+          		id
+          		full_name
+          		username
+          		phone
+          		sellon
+          		is_active
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_create_agent
+        query: |
+          mutation mobile_create_agent ($data: CreateSimpleInput!) {
+          	create_simple_user(objects: $data) {
+          		status
+          	}
+          }
+      - name: mobile_transfer_balance
+        query: |
+          mutation mobile_transfer_balance ($data: TransferInput!) {
+          	transfer_balance(objects: $data) {
+          		status
+          	}
+          }
+      - name: mobile_transfer_distributor_balance
+        query: |
+          mutation mobile_transfer_distributor_balance ($amount: numeric!, $receiverid: uuid!, $note: String!, $sell_on: numeric!) {
+          	transfer_distributor_balance(objects: {amount:$amount,receiverid:$receiverid,note:$note,sell_on:$sell_on}) {
+          		status
+          	}
+          }
+      - name: mobile_reset_password
+        query: |
+          mutation mobile_reset_password ($id: uuid!, $password: String!) {
+          	reset_password(objects: {new_password:$password,userid:$id}) {
+          		status
+          	}
+          }
+      - name: mobile_user_activate_deactivate
+        query: |
+          mutation mobile_user_activate_deactivate ($data: ActivateDeactivateInput!) {
+          	activate_deactivate(objects: $data) {
+          		status
+          	}
+          }
+      - name: mobile_update_sellon
+        query: |
+          mutation mobile_update_sellon ($id: uuid!, $sellon: numeric!) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {sellon:$sellon}) {
+          		id
+          		sellon
+          	}
+          }
+      - name: mobile_takeback
+        query: |
+          mutation mobile_takeback ($data: TakebackInput!) {
+          	takeback_balance(objects: $data) {
+          		status
+          	}
+          }
+      - name: mobile_agents_by_slug
+        query: |
+          query mobile_agents_by_slug ($slug: String!, $limit: Int!, $offset: Int!) {
+          	role {
+          		id
+          		name
+          	}
+          	user(limit: $limit, offset: $offset, where: {parentid:{_is_null:true},role:{slug:{_eq:$slug}}}) {
+          		sex
+          		id
+          		full_name
+          		username
+          		phone
+          		sellon
+          		is_active
+          		money {
+          			balance
+          		}
+          		children_aggregate {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_update_location
+        query: |
+          mutation mobile_update_location ($id: uuid!, $lat: String!, $lng: String!) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {lat:$lat,lng:$lng}) {
+          		id
+          	}
+          }
+      - name: mobile_user_profile
+        query: |
+          query mobile_user_profile ($id: uuid!) {
+          	user: user_by_pk(id: $id) {
+          		id
+          		name: full_name
+          		phone
+          		email
+          		money {
+          			balance
+          		}
+          		region: teleregion {
+          			id
+          			description
+          			capital
+          			name
+          		}
+          		parent {
+          			name: full_name
+          			phone
+          		}
+          		distributor {
+          			name
+          			phone
+          		}
+          	}
+          }
+      - name: mobile_update_password
+        query: |
+          mutation mobile_update_password ($new: String!, $old: String!) {
+          	update_password(objects: {new_password:$new,old_password:$old}) {
+          		status
+          	}
+          }
+      - name: mobile_update_profile
+        query: |
+          mutation mobile_update_profile ($id: uuid!, $full_name: String!, $email: String!, $phone: String!) {
+          	update_profile(objects: {id:$id,full_name:$full_name,email:$email,phone:$phone}) {
+          		status
+          	}
+          }
+      - name: mobile_all_teleregions
+        query: |
+          query mobile_all_teleregions {
+          	region: teleregion(order_by: {capital:asc}) {
+          		id
+          		capital
+          		description
+          		name
+          	}
+          }
+      - name: mobile_received_transfers_paginated
+        query: |
+          query mobile_received_transfers_paginated ($receiver_id: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {receiverid:{_eq:$receiver_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		receiver {
+          			full_name
+          			username
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_sent_transfers_paginated
+        query: |
+          query mobile_sent_transfers_paginated ($sender_id: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {senderid:{_eq:$sender_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          		}
+          		receiver {
+          			full_name
+          			username
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_users_aggregate_admin
+        query: |
+          query mobile_users_aggregate_admin {
+          	denomination {
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          		active: vouchers_aggregate(where: {_and:{is_active:{_eq:true}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          	user: money_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	distributor: distributor_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	retailers: user_aggregate(where: {role:{name:{_eq:"Retailer"}},is_active:{_eq:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          	distributors: distributor_aggregate(where: {active:{_eq:true}}) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: mobile_get_denomination_sales
+        query: |
+          query mobile_get_denomination_sales ($where: batch_sale_bool_exp!) {
+          	denomination(order_by: {value:asc}) {
+          		sale: sales_aggregate(where: $where) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          	}
+          }
+      - name: mobile_get_all_voucher_count
+        query: |
+          query mobile_get_all_voucher_count {
+          	wallet: money_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	distributor: distributor_aggregate {
+          		aggregate {
+          			sum {
+          				balance
+          			}
+          		}
+          	}
+          	stock: denomination(order_by: {value:asc}) {
+          		id
+          		value
+          		operator {
+          			name
+          		}
+          		sale: sales_aggregate {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          		active: vouchers_aggregate(where: {_and:{is_active:{_eq:true}}}) {
+          			aggregate {
+          				count
+          			}
+          		}
+          	}
+          }
+      - name: mobile_search_voucher
+        query: |
+          query mobile_search_voucher ($serial: String!) {
+          	voucher: search_voucher(serial: $serial) {
+          		id
+          		serial
+          		sale_batch
+          		printed_at
+          		archived
+          		denomination {
+          			id
+          			operator {
+          				name
+          			}
+          			value
+          		}
+          	}
+          }
+      - name: mobile_distributor_topup_aggregate
+        query: |
+          query mobile_distributor_topup_aggregate ($payment: payment_bool_exp!, $topup: dtopup_bool_exp!) {
+          	topup: dtopup_aggregate(where: $topup) {
+          		aggregate {
+          			sum {
+          				amount: airtime
+          			}
+          		}
+          	}
+          	topup_all: dtopup_aggregate(where: {approverid:{_is_null:false}}) {
+          		aggregate {
+          			sum {
+          				amount: airtime
+          			}
+          		}
+          	}
+          	payment: payment_aggregate(where: $payment) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	payment_all: payment_aggregate(where: {approved:{_eq:true}}) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: mobile_transfer_aggregate_dash
+        query: |
+          query mobile_transfer_aggregate_dash ($sent: transfer_bool_exp!, $received: transfer_bool_exp!) {
+          	sent: transfer_aggregate(where: $sent) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          	received: transfer_aggregate(where: $received) {
+          		aggregate {
+          			sum {
+          				amount
+          			}
+          		}
+          	}
+          }
+      - name: mobile_get_denomination_sale_info
+        query: |
+          query mobile_get_denomination_sale_info ($where: batch_sale_bool_exp!) {
+          	denomination(order_by: {value:asc}) {
+          		value
+          		operator {
+          			name
+          		}
+          		vouchers_aggregate: sales_aggregate(where: $where) {
+          			aggregate {
+          				sum {
+          					amount
+          				}
+          			}
+          		}
+          	}
+          }
+      - name: mobile_get_distributor_dropdown
+        query: |
+          query mobile_get_distributor_dropdown ($limit: Int!, $offset: Int!) {
+          	distributor(limit: $limit, offset: $offset) {
+          		id
+          		name
+          		phone
+          	}
+          }
+      - name: mobile_dtopup_approve
+        query: |
+          mutation mobile_dtopup_approve ($id: uuid!) {
+          	dtopup_approve(objects: {dtopupid:$id}) {
+          		status
+          	}
+          }
+      - name: mobile_payment_approve_and_topup
+        query: |
+          mutation mobile_payment_approve_and_topup ($id: uuid!) {
+          	approve_from_payment(objects: {paymentid:$id}) {
+          		status
+          	}
+          }
+      - name: mobile_payment_approve
+        query: |
+          mutation mobile_payment_approve ($id: uuid!) {
+          	payment_approve(objects: {paymentid:$id}) {
+          		status
+          	}
+          }
+      - name: mobile_delete_payment_by_pk
+        query: |
+          mutation mobile_delete_payment_by_pk ($id: uuid!) {
+          	delete_payment_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: mobile_all_ccds
+        query: |
+          query mobile_all_ccds ($limit: Int!, $offset: Int!) {
+          	ccd(limit: $limit, offset: $offset, order_by: {balance:desc}) {
+          		id
+          		name
+          		phone
+          		email
+          		fax
+          		active
+          		balance
+          	}
+          }
+      - name: mobile_all_loads
+        query: |
+          query mobile_all_loads {
+          	load(order_by: {approverid:asc_nulls_first,created_at:asc}) {
+          		ccd {
+          			id
+          			name
+          			phone
+          			email
+          			fax
+          			active
+          			balance
+          		}
+          		id
+          		airtime
+          		created_at
+          		approved_at
+          		approverid
+          		approver {
+          			full_name
+          			username
+          		}
+          		creatorid
+          		creator {
+          			full_name
+          			username
+          		}
+          	}
+          }
+      - name: mobile_create_v3_user
+        query: |
+          mutation mobile_create_v3_user ($username: String!, $password: String!, $full_name: String!, $email: String, $phone: String!, $roleid: uuid!, $distributorid: uuid, $city: String, $zone: String, $region: String, $teleregionid: uuid!, $area: String!, $sex: String!, $pos_availability: Boolean!, $telebirr_agent: Boolean!, $printer_serial: String, $birth_date: timestamptz) {
+          	create_user(objects: {username:$username,password:$password,full_name:$full_name,email:$email,phone:$phone,roleid:$roleid,distributorid:$distributorid,teleregionid:$teleregionid,area:$area,region:$region,zone:$zone,city:$city,sex:$sex,pos_availability:$pos_availability,telebirr_agent:$telebirr_agent,printer_serial:$printer_serial,birth_date:$birth_date}) {
+          		status
+          	}
+          }
+      - name: mobile_insert_load
+        query: |
+          mutation mobile_insert_load ($ccdid: uuid!, $airtime: numeric!) {
+          	insert_load(objects: {ccdid:$ccdid,airtime:$airtime}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: mobile_insert_ccd_load
+        query: |
+          mutation mobile_insert_ccd_load ($airtime: numeric!) {
+          	insert_load(objects: {airtime:$airtime}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: mobile_update_load
+        query: |
+          mutation mobile_update_load ($id: uuid!, $ccdid: uuid!, $airtime: numeric!) {
+          	update_load(_set: {ccdid:$ccdid,airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: mobile_update_load_by_ccd
+        query: |
+          mutation mobile_update_load_by_ccd ($id: uuid!, $airtime: numeric!) {
+          	update_load(_set: {airtime:$airtime}, where: {id:{_eq:$id}}) {
+          		returning {
+          			id
+          			airtime
+          		}
+          	}
+          }
+      - name: mobile_load_approve
+        query: |
+          mutation mobile_load_approve ($loadid: uuid!) {
+          	load_approve(objects: {loadid:$loadid}) {
+          		status
+          	}
+          }
+      - name: mobile_voucher_printed
+        query: |
+          query mobile_voucher_printed ($d_id: String!) {
+          	voucher(order_by: {serial:asc}, where: {sale_batch:{_eq:$d_id}}) {
+          		id
+          		serial
+          		printed_at
+          		buyer
+          	}
+          }
+      - name: mobile_archived_printed
+        query: |
+          query mobile_archived_printed ($d_id: String!) {
+          	voucher: avoucher(order_by: {serial:asc}, where: {sale_batch:{_eq:$d_id}}) {
+          		id
+          		serial
+          		printed_at
+          		buyer
+          	}
+          }
+      - name: mobile_reprint_batch_range_voucher_with_index
+        query: |
+          mutation mobile_reprint_batch_range_voucher_with_index ($from: String!, $to: String!, $from_index: Int!, $to_index: Int!, $batch: String!) {
+          	reprint_batch_range_voucher_with_index(objects: {from:$from,to:$to,batch:$batch,from_index:$from_index,to_index:$to_index}) {
+          		id
+          		index
+          		expiration_date
+          		voucher
+          		serial
+          	}
+          }
+      - name: mobile_get_voucher_with_index
+        query: |
+          mutation mobile_get_voucher_with_index ($qty: numeric!, $denomintaion_id: uuid!) {
+          	get_voucher_with_index(objects: {quantity:$qty,denominationid:$denomintaion_id}) {
+          		id
+          		index
+          		expiration_date
+          		voucher
+          		serial
+          		denomination
+          	}
+          }
+      - name: mobile_download_vouchers
+        query: |
+          mutation mobile_download_vouchers ($qty: numeric!, $denomintaion_id: uuid!) {
+          	get_voucher_with_index(objects: {quantity:$qty,denominationid:$denomintaion_id}) {
+          		index
+          		id
+          		expiration_date
+          		voucher
+          		serial
+          		batch
+          		printed_at
+          	}
+          }
+      - name: mobile_direct_fill
+        query: |
+          mutation mobile_direct_fill ($d_id: uuid!, $phone: String!) {
+          	direct_fill: get_voucher_with_index(objects: {denominationid:$d_id,buyer:$phone,quantity:1}) {
+          		index
+          		id
+          		serial
+          		voucher
+          		printed_at
+          		expiration_date
+          		batch
+          		denomination
+          	}
+          }
+      - name: mobile_retry_direct_fill
+        query: |
+          mutation mobile_retry_direct_fill ($serial: String!) {
+          	retry_direct_fill(objects: {serial:$serial}) {
+          		id
+          		serial
+          		voucher
+          		expiration_date
+          		buyer
+          	}
+          }
+      - name: mobile_online_wallet
+        query: |
+          query mobile_online_wallet ($id: uuid!) {
+          	money(where: {userid:{_eq:$id}}) {
+          		balance
+          	}
+          	denomination {
+          		id
+          		value
+          		operator {
+          			id
+          			name
+          		}
+          	}
+          }
+      - name: mobile_batch_sale
+        query: |
+          query mobile_batch_sale ($limit: Int!, $offset: Int!, $list: [String!]) {
+          	batch_sale(limit: $limit, offset: $offset, order_by: {created_at:desc}, where: {batch:{_nin:$list}}) {
+          		id
+          		batch
+          		amount
+          		type
+          		created_at
+          		archived
+          		denomination {
+          			id
+          			operator {
+          				name
+          			}
+          			value
+          		}
+          	}
+          }
+      - name: get_zones_with_regionid
+        query: |
+          query get_zones_with_region ($regionid: uuid!) {
+          	zone(where: {regionid:{_eq:$regionid}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_cities_with_zoneid
+        query: |
+          query get_cities_with_zoneid ($zoneid: uuid!) {
+          	city(where: {zoneid:{_eq:$zoneid}}, order_by: {name:asc}) {
+          		id
+          		name
+          	}
+          }
+      - name: get_so_credit_view
+        query: |
+          query get_so_credit_view ($where: so_credit_view_bool_exp!, $salescredtwhere: so_credit_view_bool_exp!, $limit: Int!, $offset: Int!, $distributorwhere: distributor_bool_exp!, $order_by: [so_credit_view_order_by!]) {
+          	so_credit_view(where: $where, limit: $limit, offset: $offset, order_by: $order_by) {
+          		id
+          		name
+          		phone
+          		difference
+          		diff_in_hour
+          		telebirr_topups
+          		transfers
+          		deposits
+          	}
+          	total_credit: so_credit_view_aggregate(where: $where) {
+          		aggregate {
+          			sum {
+          				difference
+          			}
+          		}
+          	}
+          	sales_w_credit: so_credit_view_aggregate(where: $salescredtwhere) {
+          		aggregate {
+          			count
+          			sum {
+          				difference
+          			}
+          		}
+          	}
+          	total_sales: distributor_aggregate(where: $distributorwhere) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: get_user_balance_log
+        query: |
+          query get_user_balance_log ($where: user_balance_log_bool_exp!, $limit: Int, $offset: Int!) {
+          	user_balance_log(where: $where, limit: $limit, offset: $offset, order_by: {created_at:desc}) {
+          		id
+          		amount
+          		old_balance
+          		new_balance
+          		created_at
+          		timestamp
+          		is_root
+          		distributor {
+          			name
+          		}
+          		user {
+          			full_name
+          			username
+          		}
+          	}
+          	user_balance_log_aggregate(where: $where) {
+          		aggregate {
+          			count
+          		}
+          	}
+          }
+      - name: delete_ccd_by_pk
+        query: |
+          mutation delete_ccd_by_pk ($id: uuid!) {
+          	delete_ccd_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_load_by_pk
+        query: |
+          mutation delete_load_by_pk ($id: uuid!) {
+          	delete_load_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_deposit_by_pk
+        query: |
+          mutation delete_deposit_by_pk ($id: uuid!) {
+          	delete_deposit_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_user_by_pk
+        query: |
+          mutation delete_user_by_pk ($id: uuid!) {
+          	delete_user_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_distributor_by_pk
+        query: |
+          mutation delete_distributor_by_pk ($id: uuid!) {
+          	delete_distributor_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_telebirr_topup_by_pk
+        query: |
+          mutation delete_telebirr_topup_by_pk ($id: uuid!) {
+          	delete_telebirr_topup_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_dtopup_by_pk
+        query: |
+          mutation delete_dtopup_by_pk ($id: uuid!) {
+          	delete_dtopup_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_bank_by_pk
+        query: |
+          mutation delete_bank_by_pk ($id: uuid!) {
+          	delete_bank_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_city_by_pk
+        query: |
+          mutation delete_city_by_pk ($id: uuid!) {
+          	delete_city_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_period_by_pk
+        query: |
+          mutation delete_period_by_pk ($id: uuid!) {
+          	delete_period_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_region_by_pk
+        query: |
+          mutation delete_region_by_pk ($id: uuid!) {
+          	delete_region_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_role_by_pk
+        query: |
+          mutation delete_role_by_pk ($id: uuid!) {
+          	delete_role_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_teleregion_by_pk
+        query: |
+          mutation delete_teleregion_by_pk ($id: uuid!) {
+          	delete_teleregion_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_zone_by_pk
+        query: |
+          mutation delete_zone_by_pk ($id: uuid!) {
+          	delete_zone_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_target_by_pk
+        query: |
+          mutation delete_target_by_pk ($id: uuid!) {
+          	delete_target_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_user_by_pk_1
+        query: |
+          mutation delete_user_by_pk ($id: uuid!) {
+          	delete_user_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_denomination_by_pk
+        query: |
+          mutation delete_denomination_by_pk ($id: uuid!) {
+          	delete_denomination_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: delete_operator_by_pk
+        query: |
+          mutation delete_operator_by_pk ($id: uuid!) {
+          	delete_operator_by_pk(id: $id) {
+          		id
+          	}
+          }
+      - name: send_user_location
+        query: |
+          mutation send_user_location ($id: uuid!, $lat: String!, $lng: String!) {
+          	update_user_by_pk(pk_columns: {id:$id}, _set: {lat:$lat,lng:$lng}) {
+          		id
+          	}
+          }
+      - name: update_teleregion_1
+        query: |
+          mutation update_teleregion ($regionid: uuid!, $uid: uuid!) {
+          	update_user_by_pk(pk_columns: {id:$uid}, _set: {teleregionid:$regionid}) {
+          		id
+          	}
+          }
+      - name: mobile_received_transfers_paginated_1
+        query: |
+          query mobile_received_transfers_paginated ($receiver_id: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {receiverid:{_eq:$receiver_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			sex
+          		}
+          		receiver {
+          			full_name
+          			username
+          			sex
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_sent_transfers_paginated_1
+        query: |
+          query mobile_sent_transfers_paginated ($sender_id: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {senderid:{_eq:$sender_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			sex
+          		}
+          		receiver {
+          			full_name
+          			username
+          			sex
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_sent_transfers_1
+        query: |
+          query mobile_sent_transfers ($senderid: uuid!, $limit: Int!, $offset: Int!) {
+          	transfer(limit: $limit, offset: $offset, where: {senderid:{_eq:$senderid}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			sex
+          		}
+          		note
+          		receiver {
+          			full_name
+          			username
+          			sex
+          		}
+          		amount
+          		created_at
+          	}
+          }
+      - name: mobile_received_transfers_1
+        query: |
+          query mobile_received_transfers ($receiver_id: uuid!) {
+          	transfer(where: {receiverid:{_eq:$receiver_id}}, order_by: {created_at:desc}) {
+          		id
+          		sender {
+          			full_name
+          			username
+          			sex
+          		}
+          		receiver {
+          			full_name
+          			username
+          			sex
+          		}
+          		note
+          		amount
+          		created_at
+          	}
+          }

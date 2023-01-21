@@ -1,0 +1,1 @@
+CREATE TABLE "pseudo"."outlet_sale_aggregate" ("outletid" uuid NOT NULL, "amount" numeric NOT NULL, PRIMARY KEY ("outletid") , FOREIGN KEY ("outletid") REFERENCES "public"."outlet"("id") ON UPDATE restrict ON DELETE restrict, UNIQUE ("outletid"));

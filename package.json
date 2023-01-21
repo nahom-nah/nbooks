@@ -1,0 +1,72 @@
+{
+  "name": "nbooks-api",
+  "version": "3.0.0",
+  "main": "server/server.js",
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "dev:express": "nodemon server.js",
+    "lint": "eslint .",
+    "dev": "docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d && yarn all:log",
+    "prod": "docker-compose up -d && yarn all:log",
+    "down": "docker-compose down",
+    "all:log": "docker-compose logs -f --tail 100",
+    "express:log": "docker-compose logs -f --tail 100 nbooks_express",
+    "graphql:log": "docker-compose logs -f --tail 100 nbooks_graphql_engine",
+    "hasura:init": "hasura init hasura",
+    "hasura": "hasura --project hasura --envfile ../.env",
+    "hasura:update:v3": "yarn hasura scripts update-project-v3",
+    "hasura:prod": "hasura --project hasura --envfile ../.env.prod",
+    "console": "yarn hasura console --api-port 9005 --console-port 9006",
+    "console:prod": "yarn hasura:prod console --api-port 9007 --console-port 9008",
+    "migrate": "yarn hasura migrate apply --database-name default && yarn hasura metadata apply",
+    "migrate:prod": "yarn hasura:prod migrate apply --database-name default && yarn hasura:prod metadata apply",
+    "migrate:status": "yarn hasura migrate status --database-name default",
+    "migrate:status:prod": "yarn hasura:prod migrate status --database-name default",
+    "seed": "yarn hasura seeds apply --database-name default",
+    "rebuild": "docker-compose -f docker-compose.yml -f docker-compose-dev.yml build nbooks_express && yarn dev",
+    "rebuild:prod": "docker-compose build nbooks_express && yarn prod"
+  },
+  "dependencies": {
+    "apollo-boost": "^0.4.9",
+    "apollo-cache-inmemory": "^1.6.6",
+    "apollo-link-http": "^1.5.17",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "chalk": "^5.0.1",
+    "cloudinary": "^1.26.0",
+    "compression": "^1.0.3",
+    "cors": "^2.8.5",
+    "cross-fetch": "^3.0.5",
+    "date-fns": "^2.29.1",
+    "dotenv": "^8.2.0",
+    "exceljs": "^4.3.0",
+    "express": "^4.17.1",
+    "file-type": "^16.2.0",
+    "form-data": "^3.0.0",
+    "formidable": "^2.0.1",
+    "graphql": "^15.3.0",
+    "graphql-tag": "^2.11.0",
+    "helmet": "^4.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.20",
+    "morgan": "^1.10.0",
+    "ncrypt-js": "^2.0.0",
+    "pg": "^8.7.3",
+    "read-text-file": "^1.1.0",
+    "twilio": "^3.77.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "hasura-cli": "^2.0.9",
+    "nodemon": "^2.0.15"
+  },
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "license": "UNLICENSED",
+  "description": "nbooks-backend"
+}

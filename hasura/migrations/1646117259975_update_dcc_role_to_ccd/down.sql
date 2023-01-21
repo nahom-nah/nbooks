@@ -1,0 +1,5 @@
+-- Could not auto-generate a down migration.
+-- Please write an appropriate down migration for the SQL below:
+-- UPDATE role
+-- SET name = 'Credit Collection and Disbursement', slug = 'CCD', description = 'Credit Collection and Disbursement'
+-- WHERE slug = 'DCC';
