@@ -1,12 +1,7 @@
-version: 2
-endpoint: http://localhost:9003/
+version: 3
+endpoint: http://localhost:9003
 admin_secret: admin
 metadata_directory: metadata
-migrations_directory: migrations
-seeds_directory: seeds
 actions:
   kind: synchronous
-  handler_webhook_baseurl: http://localhost:9004
-  codegen:
-    framework: ""
-    output_dir: ""
+  handler_webhook_baseurl: http://localhost:3000
